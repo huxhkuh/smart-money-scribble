@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
-import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
   Sidebar,
   SidebarContent,
