@@ -132,6 +132,7 @@ export default function PostEditor() {
       status: "published",
       cover_image: coverImage,
       content: blocks,
+      tags,
       published_at: new Date().toISOString(),
     };
     try {
