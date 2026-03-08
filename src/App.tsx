@@ -17,6 +17,7 @@ import PostsList from "./pages/admin/PostsList";
 import PostEditor from "./pages/admin/PostEditor";
 import MediaLibrary from "./pages/admin/MediaLibrary";
 import PostView from "./pages/PostView";
+import About from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
