@@ -1,17 +1,21 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Block } from "@/types/blocks";
-import BlockRenderer from "./BlockRenderer";
 import BlockToolbar from "./BlockToolbar";
-import { Button } from "@/components/ui/button";
-import { GripVertical, Trash2, ChevronUp, ChevronDown, Settings } from "lucide-react";
+import SortableBlock from "./SortableBlock";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface BlockEditorProps {
   blocks: Block[];
@@ -19,10 +23,13 @@ interface BlockEditorProps {
 }
 
 export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   const addBlock = useCallback(
-    (block: Block) => {
-      onChange([...blocks, block]);
-    },
+    (block: Block) => onChange([...blocks, block]),
     [blocks, onChange]
   );
 
@@ -36,9 +43,7 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
   );
 
   const removeBlock = useCallback(
-    (index: number) => {
-      onChange(blocks.filter((_, i) => i !== index));
-    },
+    (index: number) => onChange(blocks.filter((_, i) => i !== index)),
     [blocks, onChange]
   );
 
@@ -65,6 +70,23 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
     [blocks, updateBlock]
   );
 
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIndex = blocks.findIndex((b) => b.id === active.id);
+      const newIndex = blocks.findIndex((b) => b.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const newBlocks = [...blocks];
+      const [moved] = newBlocks.splice(oldIndex, 1);
+      newBlocks.splice(newIndex, 0, moved);
+      onChange(newBlocks);
+    },
+    [blocks, onChange]
+  );
+
   return (
     <div className="border rounded-xl bg-card overflow-hidden">
       <BlockToolbar onAddBlock={addBlock} />
@@ -77,87 +99,22 @@ export default function BlockEditor({ blocks, onChange }: BlockEditorProps) {
           </div>
         )}
 
-        {blocks.map((block, index) => (
-          <div key={block.id} className="group relative border border-transparent hover:border-primary/20 rounded-lg transition-colors">
-            {/* Block controls */}
-            <div className="absolute -right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col gap-0.5 z-10">
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveBlock(index, -1)} disabled={index === 0}>
-                <ChevronUp className="h-3 w-3" />
-              </Button>
-              <div className="cursor-grab">
-                <GripVertical className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => moveBlock(index, 1)} disabled={index === blocks.length - 1}>
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </div>
-
-            {/* Block actions */}
-            <div className="absolute -left-1 top-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5 z-10">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button size="icon" variant="ghost" className="h-6 w-6">
-                    <Settings className="h-3 w-3" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64 space-y-3" align="start">
-                  <h4 className="font-medium text-sm">עיצוב הבלוק</h4>
-                  <div className="space-y-2">
-                    <Label className="text-xs">צבע רקע</Label>
-                    <Input
-                      type="color"
-                      value={block.style?.backgroundColor || "#ffffff"}
-                      onChange={(e) => updateBlockStyle(index, "backgroundColor", e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">ריפוד</Label>
-                    <Select value={block.style?.padding || "1rem"} onValueChange={(v) => updateBlockStyle(index, "padding", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0.5rem">קטן</SelectItem>
-                        <SelectItem value="1rem">רגיל</SelectItem>
-                        <SelectItem value="2rem">גדול</SelectItem>
-                        <SelectItem value="3rem">ענק</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">עיגול פינות</Label>
-                    <Select value={block.style?.borderRadius || "0.5rem"} onValueChange={(v) => updateBlockStyle(index, "borderRadius", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">ללא</SelectItem>
-                        <SelectItem value="0.5rem">קטן</SelectItem>
-                        <SelectItem value="1rem">בינוני</SelectItem>
-                        <SelectItem value="1.5rem">גדול</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">יישור טקסט</Label>
-                    <Select value={block.style?.textAlign || "right"} onValueChange={(v) => updateBlockStyle(index, "textAlign", v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="right">ימין</SelectItem>
-                        <SelectItem value="center">מרכז</SelectItem>
-                        <SelectItem value="left">שמאל</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeBlock(index)}>
-                <Trash2 className="h-3 w-3" />
-              </Button>
-            </div>
-
-            <div className="pr-6 pl-6">
-              <BlockRenderer block={block} isEditing onUpdate={(updated) => updateBlock(index, updated)} />
-            </div>
-          </div>
-        ))}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+            {blocks.map((block, index) => (
+              <SortableBlock
+                key={block.id}
+                block={block}
+                index={index}
+                totalBlocks={blocks.length}
+                onUpdate={updateBlock}
+                onRemove={removeBlock}
+                onMove={moveBlock}
+                onStyleChange={updateBlockStyle}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
       </div>
     </div>
   );
