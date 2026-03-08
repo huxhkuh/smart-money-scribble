@@ -29,6 +29,7 @@ export default function PostEditor() {
   const [status, setStatus] = useState<string>("draft");
   const [coverImage, setCoverImage] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
