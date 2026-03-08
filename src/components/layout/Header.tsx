@@ -116,16 +116,14 @@ export default function Header() {
             >
               ✉️ צרו קשר
             </a>
-            {user && isAdmin && (
-              <Link
-                to="/admin"
-                onClick={() => setMobileOpen(false)}
-                className="px-4 py-3 rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                דשבורד ניהול
-              </Link>
-            )}
+            <Link
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="px-4 py-3 rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              דשבורד ניהול
+            </Link>
           </nav>
         </div>
       )}

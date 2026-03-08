@@ -62,7 +62,7 @@ function AdminSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={signOut}>
+                <SidebarMenuButton onClick={adminLogout}>
                   <LogOut className="ml-2 h-4 w-4" />
                   {!collapsed && <span>התנתק</span>}
                 </SidebarMenuButton>
