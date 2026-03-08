@@ -116,8 +116,31 @@ export default function PostEditor() {
   };
 
   const handlePublish = async () => {
-    setStatus("published");
-    setTimeout(() => handleSave(), 100);
+    setSaving(true);
+    const postData = {
+      title,
+      slug: slug || generateSlug(title),
+      excerpt,
+      post_type: postType,
+      status: "published",
+      cover_image: coverImage,
+      content: blocks,
+      published_at: new Date().toISOString(),
+    };
+    try {
+      if (isNew) {
+        const data = await adminApi.posts.create(postData);
+        toast({ title: "פורסם בהצלחה!" });
+        navigate(`/admin/posts/${data.id}`, { replace: true });
+      } else {
+        await adminApi.posts.update(id!, postData);
+        toast({ title: "פורסם בהצלחה!" });
+      }
+      setStatus("published");
+    } catch (e: any) {
+      toast({ title: "שגיאה בפרסום", description: e.message, variant: "destructive" });
+    }
+    setSaving(false);
   };
 
   const handleAiContent = (content: string) => {

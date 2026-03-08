@@ -1,1 +1,7 @@
 project_id = "pozytfqgqazhsdzgxfky"
+
+[functions.admin-posts]
+verify_jwt = false
+
+[functions.ai-write]
+verify_jwt = false
