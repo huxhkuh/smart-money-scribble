@@ -329,10 +329,9 @@ export default function BlockRenderer({ block, isEditing, onUpdate }: BlockRende
 function ImageBlock({ block, style, isEditing, updateContent }: { block: Block; style: React.CSSProperties; isEditing?: boolean; updateContent: (c: any) => void }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
 
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const uploadFile = async (file: File) => {
     setUploading(true);
     const fileName = `${Date.now()}-${file.name}`;
     const { error } = await supabase.storage.from("media").upload(fileName, file);
@@ -343,6 +342,34 @@ function ImageBlock({ block, style, isEditing, updateContent }: { block: Block; 
     const { data: urlData } = supabase.storage.from("media").getPublicUrl(fileName);
     updateContent({ url: urlData.publicUrl });
     setUploading(false);
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadFile(file);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      await uploadFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(false);
   };
 
   const widthClass = block.content.width === "half" ? "w-1/2" : block.content.width === "third" ? "w-1/3" : "w-full";
@@ -369,8 +396,15 @@ function ImageBlock({ block, style, isEditing, updateContent }: { block: Block; 
         </figure>
       ) : isEditing ? (
         <div
-          className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-10 text-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+          className={`border-2 border-dashed rounded-xl p-10 text-center text-muted-foreground cursor-pointer transition-all duration-200 ${
+            dragOver
+              ? "border-primary bg-primary/10 scale-[1.02] shadow-lg"
+              : "border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/30"
+          }`}
           onClick={() => fileInputRef.current?.click()}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
         >
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
           {uploading ? (
@@ -380,8 +414,8 @@ function ImageBlock({ block, style, isEditing, updateContent }: { block: Block; 
             </div>
           ) : (
             <div className="flex flex-col items-center gap-2">
-              <Upload className="h-8 w-8" />
-              <span>לחץ להעלאת תמונה מהמחשב</span>
+              <Upload className={`h-8 w-8 transition-transform ${dragOver ? "scale-125 text-primary" : ""}`} />
+              <span className="font-medium">{dragOver ? "שחרר כדי להעלות" : "גרור תמונה לכאן או לחץ לבחירה"}</span>
               <span className="text-xs">או הדבק URL למטה</span>
               <Input
                 placeholder="https://..."
