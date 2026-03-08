@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
+import { setAdminPassword } from "@/lib/adminApi";
 
 interface AdminAuthContextType {
   isAdminAuthenticated: boolean;
@@ -11,11 +12,14 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 const ADMIN_PASSWORD = "123456";
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    return sessionStorage.getItem("admin_password") === ADMIN_PASSWORD;
+  });
 
   const adminLogin = useCallback((password: string) => {
     if (password === ADMIN_PASSWORD) {
       setIsAdminAuthenticated(true);
+      setAdminPassword(password);
       return true;
     }
     return false;
@@ -23,6 +27,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const adminLogout = useCallback(() => {
     setIsAdminAuthenticated(false);
+    sessionStorage.removeItem("admin_password");
   }, []);
 
   return (
