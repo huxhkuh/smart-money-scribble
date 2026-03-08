@@ -10,6 +10,8 @@ import {
   LayoutGrid,
   Minus,
   Code,
+  Video,
+  Quote,
 } from "lucide-react";
 
 interface BlockToolbarProps {
