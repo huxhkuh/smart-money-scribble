@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
@@ -21,9 +21,11 @@ export default function Login() {
   const { toast } = useToast();
 
   // Redirect if already logged in as admin
-  if (!loading && user && isAdmin) {
-    navigate("/admin", { replace: true });
-  }
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [loading, user, isAdmin, navigate]);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
