@@ -1,0 +1,35 @@
+
+-- Drop restrictive policies and recreate as permissive
+DROP POLICY IF EXISTS "public_read_published_posts" ON public.posts;
+DROP POLICY IF EXISTS "admin_full_access_posts" ON public.posts;
+
+CREATE POLICY "public_read_published_posts" ON public.posts
+FOR SELECT TO anon, authenticated
+USING (status = 'published'::post_status);
+
+CREATE POLICY "admin_full_access_posts" ON public.posts
+FOR ALL TO authenticated
+USING (has_role(auth.uid(), 'admin'::app_role));
+
+-- Fix comments too
+DROP POLICY IF EXISTS "public_read_comments" ON public.comments;
+DROP POLICY IF EXISTS "public_insert_comments" ON public.comments;
+DROP POLICY IF EXISTS "admin_delete_comments" ON public.comments;
+
+CREATE POLICY "public_read_comments" ON public.comments FOR SELECT USING (true);
+CREATE POLICY "public_insert_comments" ON public.comments FOR INSERT WITH CHECK (true);
+CREATE POLICY "admin_delete_comments" ON public.comments FOR DELETE TO authenticated USING (has_role(auth.uid(), 'admin'::app_role));
+
+-- Fix post_tags
+DROP POLICY IF EXISTS "public_read_post_tags" ON public.post_tags;
+DROP POLICY IF EXISTS "admin_manage_post_tags" ON public.post_tags;
+
+CREATE POLICY "public_read_post_tags" ON public.post_tags FOR SELECT USING (true);
+CREATE POLICY "admin_manage_post_tags" ON public.post_tags FOR ALL TO authenticated USING (has_role(auth.uid(), 'admin'::app_role));
+
+-- Fix tags
+DROP POLICY IF EXISTS "public_read_tags" ON public.tags;
+DROP POLICY IF EXISTS "admin_manage_tags" ON public.tags;
+
+CREATE POLICY "public_read_tags" ON public.tags FOR SELECT USING (true);
+CREATE POLICY "admin_manage_tags" ON public.tags FOR ALL TO authenticated USING (has_role(auth.uid(), 'admin'::app_role));
