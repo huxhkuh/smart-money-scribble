@@ -7,7 +7,10 @@ export type BlockType =
   | "callout"
   | "cards"
   | "divider"
-  | "embed";
+  | "embed"
+  | "video"
+  | "code"
+  | "quote";
 
 export interface BlockStyle {
   backgroundColor?: string;
