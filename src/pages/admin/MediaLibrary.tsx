@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { adminApi } from "@/lib/adminApi";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Upload, Trash2, Copy, Image } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,20 +18,11 @@ export default function MediaLibrary() {
   const { toast } = useToast();
 
   const fetchFiles = async () => {
-    const { data, error } = await supabase.storage.from("media").list("", {
-      limit: 100,
-      sortBy: { column: "created_at", order: "desc" },
-    });
-    if (data) {
-      setFiles(
-        data
-          .filter((f) => f.name !== ".emptyFolderPlaceholder")
-          .map((f) => ({
-            name: f.name,
-            url: supabase.storage.from("media").getPublicUrl(f.name).data.publicUrl,
-            created_at: f.created_at || "",
-          }))
-      );
+    try {
+      const data = await adminApi.media.list();
+      setFiles(data || []);
+    } catch (e: any) {
+      toast({ title: "שגיאה בטעינת קבצים", description: e.message, variant: "destructive" });
     }
   };
 
@@ -43,25 +34,23 @@ export default function MediaLibrary() {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const fileName = `${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from("media").upload(fileName, file);
-    setUploading(false);
-    if (error) {
-      toast({ title: "שגיאה בהעלאה", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminApi.media.upload(file);
       toast({ title: "הקובץ הועלה בהצלחה" });
       fetchFiles();
+    } catch (err: any) {
+      toast({ title: "שגיאה בהעלאה", description: err.message, variant: "destructive" });
     }
+    setUploading(false);
   };
 
   const handleDelete = async (name: string) => {
-    const { error } = await supabase.storage.from("media").remove([name]);
-    if (error) {
-      toast({ title: "שגיאה במחיקה", description: error.message, variant: "destructive" });
-    } else {
+    try {
+      await adminApi.media.delete(name);
       toast({ title: "הקובץ נמחק" });
       fetchFiles();
+    } catch (err: any) {
+      toast({ title: "שגיאה במחיקה", description: err.message, variant: "destructive" });
     }
   };
 
