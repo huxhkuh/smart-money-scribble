@@ -166,6 +166,13 @@ export default function PostView() {
         </div>
       </div>
 
+      {/* Comments */}
+      <div className="max-w-4xl mx-auto px-6 pb-10">
+        <div className="border-t border-border pt-8">
+          <CommentsSection postId={post.id} />
+        </div>
+      </div>
+
       {/* Footer CTA */}
       <div className="max-w-4xl mx-auto px-6 pb-16">
         <div className="border-t border-border pt-8 flex flex-col items-center gap-4 text-center">
