@@ -30,7 +30,9 @@ export default function Login() {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google");
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
     setGoogleLoading(false);
     if (result?.error) {
       toast({ title: "שגיאה בהתחברות עם Google", description: String(result.error), variant: "destructive" });
