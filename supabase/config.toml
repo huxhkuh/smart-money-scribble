@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.ai-write]
 verify_jwt = false
+
+[functions.admin-media]
+verify_jwt = false
