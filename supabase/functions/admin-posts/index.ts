@@ -8,6 +8,27 @@ const corsHeaders = {
 
 const ADMIN_PASSWORD = "123456";
 
+async function syncPostTags(supabase: any, postId: string, tagNames: string[]) {
+  // Delete existing post_tags
+  await supabase.from("post_tags").delete().eq("post_id", postId);
+  
+  if (tagNames.length === 0) return;
+  
+  // Upsert tags and link
+  for (const name of tagNames) {
+    const slug = name.trim().replace(/\s+/g, "-").toLowerCase();
+    // Try to find existing tag
+    let { data: tag } = await supabase.from("tags").select("id").eq("name", name.trim()).single();
+    if (!tag) {
+      const { data: newTag } = await supabase.from("tags").insert({ name: name.trim(), slug }).select("id").single();
+      tag = newTag;
+    }
+    if (tag) {
+      await supabase.from("post_tags").insert({ post_id: postId, tag_id: tag.id }).select();
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
