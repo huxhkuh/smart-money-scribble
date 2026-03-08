@@ -78,6 +78,10 @@ export default function PostEditor() {
       }).catch((e) => {
         toast({ title: "שגיאה בטעינת הפוסט", description: e.message, variant: "destructive" });
       });
+      // Load tags for post
+      adminApi.tags.getForPost(id).then((data: any[]) => {
+        setTags(data.map((t) => t.name));
+      }).catch(() => {});
     }
   }, [id, isNew]);
 
