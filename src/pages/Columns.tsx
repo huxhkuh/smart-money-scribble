@@ -16,7 +16,10 @@ export default function Columns() {
       .eq("post_type", "column")
       .eq("status", "published")
       .order("published_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error fetching columns:", error);
+        }
         setPosts(data || []);
         setLoading(false);
       });

@@ -16,7 +16,10 @@ export default function Guides() {
       .eq("post_type", "guide")
       .eq("status", "published")
       .order("published_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Error fetching guides:", error);
+        }
         setPosts(data || []);
         setLoading(false);
       });
