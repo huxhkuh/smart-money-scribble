@@ -103,6 +103,7 @@ export default function PostEditor() {
       status,
       cover_image: coverImage,
       content: blocks,
+      tags,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
