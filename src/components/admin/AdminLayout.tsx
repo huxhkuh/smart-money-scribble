@@ -28,7 +28,7 @@ function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { adminLogout } = useAdminAuth();
 
   return (
     <Sidebar side="right" collapsible="icon">
