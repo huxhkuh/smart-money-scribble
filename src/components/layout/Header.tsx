@@ -60,6 +60,11 @@ export default function Header() {
 
         {/* Home CTA + Contact */}
         <div className="hidden md:flex items-center gap-2">
+          {user && isAdmin && (
+            <Button asChild variant="outline" size="sm" className="gap-1 border-primary/30 text-primary hover:bg-primary/10">
+              <Link to="/admin"><LayoutDashboard className="h-4 w-4" /> דשבורד ניהול</Link>
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm" className="gap-1">
             <a href="mailto:lets.go.business.yosi@gmail.com">✉️ צרו קשר</a>
           </Button>
