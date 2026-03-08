@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, TrendingUp, ExternalLink } from "lucide-react";
+import { Menu, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo.png";
 
 const navItems = [
-  { label: "דף הבית", path: "/" },
-  { label: "מדריכים", path: "/guides" },
+  { label: "המדריכים שפורסמו", path: "/guides" },
   { label: "טורים", path: "/columns" },
   { label: "מחשבונים", path: "/calculators" },
+  { label: "אודות", path: "/about" },
 ];
 
 const externalLink = {
-  label: "הורדת מדריכים",
+  label: "המדריכים בדרייב",
   url: "https://drive.google.com/drive/u/0/folders/12j6sADMONjfEcMbpFPLeTpQrPc7kwrix",
 };
 
@@ -21,16 +22,11 @@ export default function Header() {
   const location = useLocation();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
-            <TrendingUp className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-heading font-bold gradient-text">
-            פיננסי+
-          </span>
+        <Link to="/" className="flex items-center gap-2 shrink-0">
+          <img src={logo} alt="בואו חשבון" className="h-10 w-auto" />
         </Link>
 
         {/* Desktop Nav */}
@@ -42,8 +38,8 @@ export default function Header() {
               className={cn(
                 "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
                 location.pathname === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary/10 text-primary font-bold"
+                  : "text-foreground/70 hover:text-foreground hover:bg-muted"
               )}
             >
               {item.label}
@@ -53,12 +49,22 @@ export default function Header() {
             href={externalLink.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
           >
             {externalLink.label}
             <ExternalLink className="h-3.5 w-3.5" />
           </a>
         </nav>
+
+        {/* Home CTA + Contact */}
+        <div className="hidden md:flex items-center gap-2">
+          <Button asChild variant="outline" size="sm" className="gap-1">
+            <a href="mailto:lets.go.business.yosi@gmail.com">✉️ צרו קשר</a>
+          </Button>
+          <Button asChild size="sm" className="bg-foreground text-background hover:bg-foreground/90">
+            <Link to="/">לדף הבית</Link>
+          </Button>
+        </div>
 
         {/* Mobile Toggle */}
         <Button
@@ -74,7 +80,7 @@ export default function Header() {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-card animate-fade-in">
+        <div className="md:hidden border-t bg-background animate-fade-in">
           <nav className="container py-4 flex flex-col gap-1">
             {navItems.map((item) => (
               <Link
@@ -84,8 +90,8 @@ export default function Header() {
                 className={cn(
                   "px-4 py-3 rounded-lg text-sm font-medium transition-colors",
                   location.pathname === item.path
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-primary/10 text-primary font-bold"
+                    : "text-foreground/70 hover:text-foreground hover:bg-muted"
                 )}
               >
                 {item.label}
@@ -95,10 +101,17 @@ export default function Header() {
               href={externalLink.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
+              onClick={() => setMobileOpen(false)}
+              className="px-4 py-3 rounded-lg text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-colors flex items-center gap-1"
             >
               {externalLink.label}
               <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+            <a
+              href="mailto:lets.go.business.yosi@gmail.com"
+              className="px-4 py-3 rounded-lg text-sm font-medium text-foreground/70 hover:text-foreground hover:bg-muted transition-colors"
+            >
+              ✉️ צרו קשר
             </a>
           </nav>
         </div>

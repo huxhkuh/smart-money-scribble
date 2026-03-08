@@ -1,129 +1,155 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, BookOpen, Columns3, Calculator, TrendingUp, Sparkles, BarChart3 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const categories = [
-  {
-    title: "מדריכים",
-    description: "מדריכים מקיפים להשקעות, חיסכון, ותכנון פיננסי",
-    icon: BookOpen,
-    path: "/guides",
-    color: "from-primary to-secondary",
-    badge: "פופולרי",
-  },
-  {
-    title: "טורים",
-    description: "ניתוחים שבועיים, תובנות שוק ודעות מומחים",
-    icon: Columns3,
-    path: "/columns",
-    color: "from-secondary to-info",
-    badge: "חדש",
-  },
-  {
-    title: "מחשבונים",
-    description: "כלים חכמים לחישוב ריבית, משכנתא, תשואה ועוד",
-    icon: Calculator,
-    path: "/calculators",
-    color: "from-accent to-warning",
-    badge: "כלים",
-  },
-];
-
-const features = [
-  { icon: TrendingUp, title: "ניתוחי שוק", desc: "עדכונים ותובנות על שוק ההון הישראלי והבינלאומי" },
-  { icon: Sparkles, title: "תוכן ויזואלי", desc: "מדריכים מעוצבים עם גרפים, טבלאות ואינפוגרפיקות" },
-  { icon: BarChart3, title: "כלים אינטראקטיביים", desc: "מחשבונים פיננסיים מתקדמים לקבלת החלטות חכמות" },
-];
+import { Info, Calendar, ArrowLeft } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 export default function Index() {
+  const [latestPosts, setLatestPosts] = useState<any[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from("posts")
+      .select("*")
+      .eq("status", "published")
+      .order("published_at", { ascending: false })
+      .limit(6)
+      .then(({ data }) => setLatestPosts(data || []));
+  }, []);
+
+  const typeLabels: Record<string, string> = { guide: "מדריך", column: "טור", news: "חדשות" };
+
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 gradient-hero opacity-10" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(262_83%_58%/0.15),transparent_60%)]" />
-        <div className="container relative py-20 md:py-32">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <Badge className="gradient-primary text-primary-foreground border-0 px-4 py-1.5 text-sm">
-              🚀 הבלוג הפיננסי שלך
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-heading font-black leading-tight">
-              הכסף שלך,{" "}
-              <span className="gradient-text">ההחלטות שלך</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              מדריכים מקיפים, ניתוחי שוק מעמיקים, וכלים חכמים שיעזרו לך לקבל החלטות פיננסיות טובות יותר
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center pt-2">
-              <Button asChild size="lg" className="gradient-primary border-0 text-primary-foreground shadow-elevated hover:opacity-90 transition-opacity">
-                <Link to="/guides">
-                  התחל ללמוד
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link to="/calculators">מחשבונים פיננסיים</Link>
-              </Button>
+      {/* Hero Section - matching original layout */}
+      <section className="relative overflow-hidden bg-background">
+        <div className="container py-12 md:py-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Right side - text content (RTL) */}
+            <div className="space-y-6 text-center md:text-right order-2 md:order-1">
+              <img src={logo} alt="בואו חשבון" className="h-36 w-auto mx-auto md:mx-0 md:mr-0" />
+              
+              <h1 className="text-5xl md:text-6xl font-heading font-black">
+                בואו חשבון.
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-accent font-bold">
+                ידע פשוט. בחירות חכמות. עתיד בטוח.
+              </p>
+              
+              <p className="text-lg text-foreground/80 font-medium">
+                מדריכים פשוטים שמובילים לבחירות נכונות בכסף.
+              </p>
+
+              {/* Disclaimer callout - like original orange box */}
+              <div className="bg-accent/20 border border-accent/40 rounded-xl p-5 text-right">
+                <div className="flex gap-3">
+                  <Info className="h-5 w-5 text-accent shrink-0 mt-1" />
+                  <div className="text-sm leading-relaxed text-foreground/80 space-y-2">
+                    <p>חשוב שתדעו – אני <strong>לא</strong> יועץ פנסיוני מוסמך. גם לא סוכן ביטוח או משהו בסגנון.</p>
+                    <p>אין לי אפשרות לייעץ לכם, בשביל זה צריך להכיר אותכם.</p>
+                    <p>אני רק מנסה לעשות סדר בבלגן, להסביר בשפה פשוטה מה כל אחד צריך לדעת.</p>
+                    <p>אם אתם צריכים ייעוץ מותאם אישית – תמיד עדיף לפנות לאיש מקצוע עם רישיון.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Left side - hero image */}
+            <div className="order-1 md:order-2">
+              <div className="rounded-2xl overflow-hidden shadow-elevated">
+                <img
+                  src="https://images.unsplash.com/photo-1621981386829-9b458a2cddde?w=600&h=800&fit=crop"
+                  alt="מטבעות ומחשבון - תכנון פיננסי"
+                  className="w-full h-[400px] md:h-[550px] object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="container py-16">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-heading font-bold mb-3">גלה את התוכן שלנו</h2>
-          <p className="text-muted-foreground text-lg">בחר קטגוריה והתחל לחקור</p>
-        </div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {categories.map((cat) => (
-            <Link key={cat.path} to={cat.path} className="group">
-              <Card className="h-full border-0 shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 overflow-hidden">
-                <div className={`h-2 bg-gradient-to-l ${cat.color}`} />
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${cat.color}`}>
-                      <cat.icon className="h-6 w-6 text-primary-foreground" />
-                    </div>
-                    <Badge variant="secondary" className="text-xs">{cat.badge}</Badge>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-heading font-bold mb-2 group-hover:text-primary transition-colors">
-                      {cat.title}
-                    </h3>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {cat.description}
-                    </p>
-                  </div>
-                  <div className="flex items-center text-primary text-sm font-medium">
-                    <span>צפה בתוכן</span>
-                    <ArrowLeft className="h-4 w-4 mr-1 group-hover:translate-x-[-4px] transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Latest Posts */}
+      <section className="bg-muted/30 border-t">
+        <div className="container py-16">
+          <h2 className="text-3xl font-heading font-bold mb-2 text-center">המדריכים האחרונים שפורסמו</h2>
+          <p className="text-muted-foreground text-center mb-10">תוכן חדש שעלה לאתר</p>
+
+          {latestPosts.length === 0 ? (
+            <div className="text-center text-muted-foreground py-12 border-2 border-dashed border-muted-foreground/20 rounded-2xl">
+              <p>מדריכים יופיעו כאן לאחר הוספתם מה-Dashboard</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {latestPosts.map((post) => (
+                <Link to={`/post/${post.slug}`} key={post.id} className="group">
+                  <Card className="h-full border shadow-card hover:shadow-elevated transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+                    {post.cover_image && (
+                      <div className="aspect-video overflow-hidden">
+                        <img src={post.cover_image} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      </div>
+                    )}
+                    <CardHeader>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge variant="secondary" className="text-xs">{typeLabels[post.post_type] || post.post_type}</Badge>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(post.published_at || post.created_at).toLocaleDateString("he-IL")}
+                        </span>
+                      </div>
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">{post.title}</CardTitle>
+                      {post.excerpt && <CardDescription className="line-clamp-2">{post.excerpt}</CardDescription>}
+                    </CardHeader>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div className="text-center mt-8">
+            <Link to="/guides" className="inline-flex items-center gap-1 text-primary hover:underline font-medium">
+              כל המדריכים »
             </Link>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* Features */}
-      <section className="border-t bg-muted/30">
-        <div className="container py-16">
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((f, i) => (
-              <div key={i} className="flex gap-4 items-start animate-fade-in" style={{ animationDelay: `${i * 100}ms` }}>
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                  <f.icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold mb-1">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
-                </div>
+      {/* Bottom section - links & contact like original */}
+      <section className="container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="shadow-card hover:shadow-elevated transition-all text-center p-6">
+            <CardContent className="space-y-3 p-0">
+              <h3 className="text-lg font-heading font-bold">מה זה בכלל בואו חשבון?</h3>
+              <Link to="/about" className="text-primary hover:underline font-medium">כאן »</Link>
+            </CardContent>
+          </Card>
+          <Card className="shadow-card hover:shadow-elevated transition-all text-center p-6">
+            <CardContent className="space-y-3 p-0">
+              <h3 className="text-lg font-heading font-bold">כל המדריכים</h3>
+              <div className="flex flex-col gap-2">
+                <Link to="/guides" className="text-primary hover:underline font-medium">כל המדריכים »</Link>
+                <a
+                  href="https://drive.google.com/drive/u/0/folders/12j6sADMONjfEcMbpFPLeTpQrPc7kwrix"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline font-medium"
+                >
+                  המדריכים בדרייב »
+                </a>
               </div>
-            ))}
-          </div>
+            </CardContent>
+          </Card>
+          <Card className="shadow-card hover:shadow-elevated transition-all text-center p-6">
+            <CardContent className="space-y-3 p-0">
+              <h3 className="text-lg font-heading font-bold">יצירת קשר</h3>
+              <p className="text-sm text-muted-foreground">אפשר ליצור איתי קשר במייל (אני ממש משתדל לענות. בחינם)</p>
+              <a href="mailto:lets.go.business.yosi@gmail.com" className="text-primary hover:underline font-medium text-sm">
+                lets.go.business.yosi@gmail.com
+              </a>
+            </CardContent>
+          </Card>
         </div>
       </section>
     </div>
