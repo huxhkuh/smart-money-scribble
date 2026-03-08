@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { adminApi } from "@/lib/adminApi";
 import { Block } from "@/types/blocks";
 import BlockEditor from "@/components/editor/BlockEditor";
 import BlockRenderer from "@/components/editor/BlockRenderer";
@@ -13,12 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Eye, Undo, Redo, Send } from "lucide-react";
+import { Save, Eye, Undo, Redo, Send, Sparkles } from "lucide-react";
+import AiWriteDialog from "@/components/editor/AiWriteDialog";
 
 export default function PostEditor() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
   const isNew = !id || id === "new";
 
@@ -31,6 +30,7 @@ export default function PostEditor() {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
 
   // Undo/Redo
   const [history, setHistory] = useState<Block[][]>([[]]);
@@ -60,36 +60,24 @@ export default function PostEditor() {
 
   useEffect(() => {
     if (!isNew && id) {
-      supabase
-        .from("posts")
-        .select("*")
-        .eq("id", id)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            setTitle(data.title);
-            setSlug(data.slug || "");
-            setExcerpt(data.excerpt || "");
-            setPostType(data.post_type);
-            setStatus(data.status);
-            setCoverImage(data.cover_image || "");
-            const content = Array.isArray(data.content) ? data.content as unknown as Block[] : [];
-            setBlocks(content);
-            setHistory([content]);
-            setHistoryIndex(0);
-          }
-        });
+      adminApi.posts.get(id).then((data) => {
+        if (data) {
+          setTitle(data.title);
+          setSlug(data.slug || "");
+          setExcerpt(data.excerpt || "");
+          setPostType(data.post_type);
+          setStatus(data.status);
+          setCoverImage(data.cover_image || "");
+          const content = Array.isArray(data.content) ? data.content as Block[] : [];
+          setBlocks(content);
+          setHistory([content]);
+          setHistoryIndex(0);
+        }
+      }).catch((e) => {
+        toast({ title: "שגיאה בטעינת הפוסט", description: e.message, variant: "destructive" });
+      });
     }
   }, [id, isNew]);
-
-  // Autosave
-  useEffect(() => {
-    if (isNew || !id) return;
-    const timer = setTimeout(() => {
-      handleSave(true);
-    }, 30000);
-    return () => clearTimeout(timer);
-  }, [blocks, title, excerpt]);
 
   const generateSlug = (text: string) => {
     return text
@@ -105,36 +93,44 @@ export default function PostEditor() {
       title,
       slug: slug || generateSlug(title),
       excerpt,
-      post_type: postType as any,
-      status: status as any,
+      post_type: postType,
+      status,
       cover_image: coverImage,
-      content: blocks as any,
-      author_id: user?.id,
+      content: blocks,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
-    let result;
-    if (isNew) {
-      result = await supabase.from("posts").insert(postData).select().single();
-    } else {
-      result = await supabase.from("posts").update(postData).eq("id", id).select().single();
-    }
-
-    setSaving(false);
-
-    if (result.error) {
-      toast({ title: "שגיאה בשמירה", description: result.error.message, variant: "destructive" });
-    } else {
-      if (!silent) toast({ title: "נשמר בהצלחה!" });
-      if (isNew && result.data) {
-        navigate(`/admin/posts/${result.data.id}`, { replace: true });
+    try {
+      if (isNew) {
+        const data = await adminApi.posts.create(postData);
+        if (!silent) toast({ title: "נשמר בהצלחה!" });
+        navigate(`/admin/posts/${data.id}`, { replace: true });
+      } else {
+        await adminApi.posts.update(id!, postData);
+        if (!silent) toast({ title: "נשמר בהצלחה!" });
       }
+    } catch (e: any) {
+      toast({ title: "שגיאה בשמירה", description: e.message, variant: "destructive" });
     }
+    setSaving(false);
   };
 
   const handlePublish = async () => {
     setStatus("published");
     setTimeout(() => handleSave(), 100);
+  };
+
+  const handleAiContent = (content: string) => {
+    // Parse AI content into text blocks
+    const paragraphs = content.split(/\n\n+/).filter(Boolean);
+    const newBlocks: Block[] = paragraphs.map((p) => ({
+      id: crypto.randomUUID(),
+      type: "text" as const,
+      content: { html: p.startsWith("<") ? p : `<p>${p}</p>` },
+    }));
+    if (newBlocks.length > 0) {
+      updateBlocks([...blocks, ...newBlocks]);
+    }
   };
 
   return (
@@ -143,6 +139,10 @@ export default function PostEditor() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h2 className="text-xl font-heading font-bold">{isNew ? "פוסט חדש" : "עריכת פוסט"}</h2>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setAiDialogOpen(true)} className="gap-1.5 border-purple-300 text-purple-600 hover:bg-purple-50 dark:border-purple-700 dark:text-purple-400 dark:hover:bg-purple-950/30">
+            <Sparkles className="h-4 w-4" />
+            כתיבה עם AI
+          </Button>
           <Button variant="outline" size="sm" onClick={undo} disabled={historyIndex <= 0}>
             <Undo className="h-4 w-4" />
           </Button>
@@ -229,6 +229,13 @@ export default function PostEditor() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <AiWriteDialog
+        open={aiDialogOpen}
+        onOpenChange={setAiDialogOpen}
+        onContentGenerated={handleAiContent}
+        existingContent={blocks.map(b => b.content?.html || b.content?.text || "").filter(Boolean).join("\n")}
+      />
     </div>
   );
 }
