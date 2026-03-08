@@ -28,6 +28,9 @@ const blockOptions: { type: BlockType; label: string; icon: any }[] = [
   { type: "cards", label: "כרטיסים", icon: LayoutGrid },
   { type: "divider", label: "קו מפריד", icon: Minus },
   { type: "embed", label: "Embed", icon: Code },
+  { type: "video", label: "וידאו", icon: Video },
+  { type: "code", label: "קוד", icon: Code },
+  { type: "quote", label: "ציטוט", icon: Quote },
 ];
 
 export default function BlockToolbar({ onAddBlock }: BlockToolbarProps) {

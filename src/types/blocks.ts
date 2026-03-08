@@ -113,6 +113,12 @@ export function createBlock(type: BlockType): Block {
       return { id, type, content: {} };
     case "embed":
       return { id, type, content: { url: "" } };
+    case "video":
+      return { id, type, content: { url: "", caption: "" } };
+    case "code":
+      return { id, type, content: { code: "", language: "javascript" } };
+    case "quote":
+      return { id, type, content: { text: "", author: "" } };
     default:
       return { id, type: "text", content: { html: "" } };
   }
