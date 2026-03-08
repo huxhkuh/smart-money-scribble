@@ -20,7 +20,6 @@ const externalLink = {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { user, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
