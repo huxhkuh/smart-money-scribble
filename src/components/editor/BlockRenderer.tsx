@@ -1,7 +1,11 @@
+import { useRef, useState } from "react";
 import { Block } from "@/types/blocks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, AlertTriangle, Upload, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface BlockRendererProps {
   block: Block;
