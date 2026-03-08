@@ -86,33 +86,8 @@ export default function BlockRenderer({ block, isEditing, onUpdate }: BlockRende
       );
     }
 
-    case "image": {
-      const widthClass = block.content.width === "half" ? "w-1/2" : block.content.width === "third" ? "w-1/3" : "w-full";
-      const alignClass = block.content.align === "center" ? "mx-auto" : block.content.align === "left" ? "ml-auto mr-0" : "";
-      return (
-        <div style={style}>
-          {block.content.url ? (
-            <figure className={`${widthClass} ${alignClass}`}>
-              <img
-                src={block.content.url}
-                alt={block.content.alt || ""}
-                className="rounded-xl w-full shadow-lg"
-                loading="lazy"
-              />
-              {block.content.caption && (
-                <figcaption className="text-sm text-muted-foreground mt-3 text-center italic">
-                  {block.content.caption}
-                </figcaption>
-              )}
-            </figure>
-          ) : isEditing ? (
-            <div className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 text-center text-muted-foreground">
-              הוסף תמונה מספריית המדיה
-            </div>
-          ) : null}
-        </div>
-      );
-    }
+    case "image":
+      return <ImageBlock block={block} style={style} isEditing={isEditing} updateContent={updateContent} />;
 
     case "table":
       return (
