@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Save, Eye, Undo, Redo, Send, Sparkles } from "lucide-react";
 import AiWriteDialog from "@/components/editor/AiWriteDialog";
+import TagsInput from "@/components/editor/TagsInput";
 
 export default function PostEditor() {
   const { id } = useParams();
