@@ -36,7 +36,7 @@ const App = () => (
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/post/:slug" element={<PostView />} />
             </Route>
-            <Route path="/login" element={<Login />} />
+            
             <Route
               path="/admin"
               element={
