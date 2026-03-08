@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
@@ -21,19 +21,19 @@ export default function Login() {
   const { toast } = useToast();
 
   // Redirect if already logged in as admin
-  if (!loading && user && isAdmin) {
-    navigate("/admin", { replace: true });
-  }
+  useEffect(() => {
+    if (!loading && user && isAdmin) {
+      navigate("/admin", { replace: true });
+    }
+  }, [loading, user, isAdmin, navigate]);
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/admin",
-    });
+    const result = await lovable.auth.signInWithOAuth("google");
     setGoogleLoading(false);
-    if (error) {
-      toast({ title: "שגיאה בהתחברות עם Google", description: String(error), variant: "destructive" });
+    if (result?.error) {
+      toast({ title: "שגיאה בהתחברות עם Google", description: String(result.error), variant: "destructive" });
     }
   };
 
