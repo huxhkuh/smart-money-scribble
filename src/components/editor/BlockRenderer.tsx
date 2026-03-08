@@ -1,7 +1,11 @@
+import { useRef, useState } from "react";
 import { Block } from "@/types/blocks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
+import { AlertCircle, CheckCircle, Info, AlertTriangle, Upload, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface BlockRendererProps {
   block: Block;
@@ -82,33 +86,8 @@ export default function BlockRenderer({ block, isEditing, onUpdate }: BlockRende
       );
     }
 
-    case "image": {
-      const widthClass = block.content.width === "half" ? "w-1/2" : block.content.width === "third" ? "w-1/3" : "w-full";
-      const alignClass = block.content.align === "center" ? "mx-auto" : block.content.align === "left" ? "ml-auto mr-0" : "";
-      return (
-        <div style={style}>
-          {block.content.url ? (
-            <figure className={`${widthClass} ${alignClass}`}>
-              <img
-                src={block.content.url}
-                alt={block.content.alt || ""}
-                className="rounded-xl w-full shadow-lg"
-                loading="lazy"
-              />
-              {block.content.caption && (
-                <figcaption className="text-sm text-muted-foreground mt-3 text-center italic">
-                  {block.content.caption}
-                </figcaption>
-              )}
-            </figure>
-          ) : isEditing ? (
-            <div className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 text-center text-muted-foreground">
-              הוסף תמונה מספריית המדיה
-            </div>
-          ) : null}
-        </div>
-      );
-    }
+    case "image":
+      return <ImageBlock block={block} style={style} isEditing={isEditing} updateContent={updateContent} />;
 
     case "table":
       return (
@@ -345,4 +324,80 @@ export default function BlockRenderer({ block, isEditing, onUpdate }: BlockRende
     default:
       return <div className="text-muted-foreground p-4">בלוק לא מוכר: {block.type}</div>;
   }
+}
+
+function ImageBlock({ block, style, isEditing, updateContent }: { block: Block; style: React.CSSProperties; isEditing?: boolean; updateContent: (c: any) => void }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const fileName = `${Date.now()}-${file.name}`;
+    const { error } = await supabase.storage.from("media").upload(fileName, file);
+    if (error) {
+      setUploading(false);
+      return;
+    }
+    const { data: urlData } = supabase.storage.from("media").getPublicUrl(fileName);
+    updateContent({ url: urlData.publicUrl });
+    setUploading(false);
+  };
+
+  const widthClass = block.content.width === "half" ? "w-1/2" : block.content.width === "third" ? "w-1/3" : "w-full";
+  const alignClass = block.content.align === "center" ? "mx-auto" : block.content.align === "left" ? "ml-auto mr-0" : "";
+
+  return (
+    <div style={style}>
+      {block.content.url ? (
+        <figure className={`${widthClass} ${alignClass}`}>
+          <img src={block.content.url} alt={block.content.alt || ""} className="rounded-xl w-full shadow-lg" loading="lazy" />
+          {block.content.caption && (
+            <figcaption className="text-sm text-muted-foreground mt-3 text-center italic">{block.content.caption}</figcaption>
+          )}
+          {isEditing && (
+            <div className="mt-3 space-y-2">
+              <Input placeholder="טקסט חלופי (alt)" value={block.content.alt || ""} onChange={(e) => updateContent({ alt: e.target.value })} dir="rtl" />
+              <Input placeholder="כיתוב (caption)" value={block.content.caption || ""} onChange={(e) => updateContent({ caption: e.target.value })} dir="rtl" />
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>החלף תמונה</Button>
+                <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+              </div>
+            </div>
+          )}
+        </figure>
+      ) : isEditing ? (
+        <div
+          className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-10 text-center text-muted-foreground cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+          {uploading ? (
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span>מעלה תמונה...</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2">
+              <Upload className="h-8 w-8" />
+              <span>לחץ להעלאת תמונה מהמחשב</span>
+              <span className="text-xs">או הדבק URL למטה</span>
+              <Input
+                placeholder="https://..."
+                dir="ltr"
+                className="mt-2 max-w-md mx-auto"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    updateContent({ url: (e.target as HTMLInputElement).value });
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }
