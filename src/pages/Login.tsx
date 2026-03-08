@@ -17,9 +17,13 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, signUp, user, isAdmin, loading } = useAuth();
-  const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Redirect if already logged in as admin
+  if (!loading && user && isAdmin) {
+    navigate("/admin", { replace: true });
+  }
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
