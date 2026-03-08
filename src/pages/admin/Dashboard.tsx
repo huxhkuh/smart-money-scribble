@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { adminApi } from "@/lib/adminApi";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Eye, PenLine, BookOpen } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -9,17 +9,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState({ total: 0, published: 0, drafts: 0 });
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const { data } = await supabase.from("posts").select("status");
-      if (data) {
-        setStats({
-          total: data.length,
-          published: data.filter((p: any) => p.status === "published").length,
-          drafts: data.filter((p: any) => p.status === "draft").length,
-        });
-      }
-    };
-    fetchStats();
+    adminApi.posts.stats().then(setStats).catch(console.error);
   }, []);
 
   const cards = [
