@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
-import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,7 @@ function AdminSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { signOut } = useAuth();
+  const { adminLogout } = useAdminAuth();
 
   return (
     <Sidebar side="right" collapsible="icon">
@@ -62,7 +62,7 @@ function AdminSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={signOut}>
+                <SidebarMenuButton onClick={adminLogout}>
                   <LogOut className="ml-2 h-4 w-4" />
                   {!collapsed && <span>התנתק</span>}
                 </SidebarMenuButton>
