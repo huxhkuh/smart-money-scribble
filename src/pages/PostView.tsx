@@ -6,6 +6,7 @@ import BlockRenderer from "@/components/editor/BlockRenderer";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Calendar, Clock, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CommentsSection from "@/components/comments/CommentsSection";
 
 const typeLabels: Record<string, string> = {
   guide: "מדריך",
