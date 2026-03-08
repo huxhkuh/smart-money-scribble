@@ -36,6 +36,7 @@ const App = () => (
               <Route path="/columns" element={<Columns />} />
               <Route path="/calculators" element={<Calculators />} />
               <Route path="/post/:slug" element={<PostView />} />
+              <Route path="/about" element={<About />} />
             </Route>
             
             <Route
