@@ -231,6 +231,10 @@ export default function PostEditor() {
             <Label>תמונת כותרת URL</Label>
             <Input value={coverImage} onChange={(e) => setCoverImage(e.target.value)} placeholder="https://..." dir="ltr" />
           </div>
+          <div className="space-y-1 md:col-span-2 lg:col-span-4">
+            <Label>תגיות</Label>
+            <TagsInput tags={tags} onChange={setTags} />
+          </div>
         </CardContent>
       </Card>
 
