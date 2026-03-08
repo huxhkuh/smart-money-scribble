@@ -81,4 +81,35 @@ export const adminApi = {
       return res;
     },
   },
+  media: {
+    list: async () => {
+      const res = await adminFetch(`${FUNCTIONS_URL}/admin-media?action=list`);
+      return res.json();
+    },
+    upload: async (file: File) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const headers: Record<string, string> = {
+        "x-admin-password": sessionStorage.getItem("admin_password") || "",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      };
+      const res = await fetch(`${FUNCTIONS_URL}/admin-media?action=upload`, {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      return res.json();
+    },
+    delete: async (name: string) => {
+      const res = await adminFetch(`${FUNCTIONS_URL}/admin-media?action=delete`, {
+        method: "POST",
+        body: JSON.stringify({ name }),
+      });
+      return res.json();
+    },
+  },
 };
