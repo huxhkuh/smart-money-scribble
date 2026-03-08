@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ExternalLink } from "lucide-react";
+import { Menu, X, ExternalLink, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -20,6 +21,7 @@ const externalLink = {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin } = useAuth();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
@@ -58,6 +60,11 @@ export default function Header() {
 
         {/* Home CTA + Contact */}
         <div className="hidden md:flex items-center gap-2">
+          {user && isAdmin && (
+            <Button asChild variant="outline" size="sm" className="gap-1 border-primary/30 text-primary hover:bg-primary/10">
+              <Link to="/admin"><LayoutDashboard className="h-4 w-4" /> דשבורד ניהול</Link>
+            </Button>
+          )}
           <Button asChild variant="outline" size="sm" className="gap-1">
             <a href="mailto:lets.go.business.yosi@gmail.com">✉️ צרו קשר</a>
           </Button>
@@ -113,6 +120,16 @@ export default function Header() {
             >
               ✉️ צרו קשר
             </a>
+            {user && isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 rounded-lg text-sm font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors flex items-center gap-1"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                דשבורד ניהול
+              </Link>
+            )}
           </nav>
         </div>
       )}
