@@ -77,6 +77,21 @@ export interface EmbedBlockContent {
   caption?: string;
 }
 
+export interface VideoBlockContent {
+  url: string;
+  caption?: string;
+}
+
+export interface CodeBlockContent {
+  code: string;
+  language: string;
+}
+
+export interface QuoteBlockContent {
+  text: string;
+  author?: string;
+}
+
 export function createBlock(type: BlockType): Block {
   const id = crypto.randomUUID();
   switch (type) {
