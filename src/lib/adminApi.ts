@@ -62,6 +62,16 @@ export const adminApi = {
       return res.json();
     },
   },
+  tags: {
+    getAll: async () => {
+      const res = await adminFetch(`${FUNCTIONS_URL}/admin-posts?action=get-tags`);
+      return res.json();
+    },
+    getForPost: async (postId: string) => {
+      const res = await adminFetch(`${FUNCTIONS_URL}/admin-posts?action=get-tags&post_id=${postId}`);
+      return res.json();
+    },
+  },
   ai: {
     stream: async (params: { prompt: string; context?: string; action: string }) => {
       const res = await adminFetch(`${FUNCTIONS_URL}/ai-write`, {

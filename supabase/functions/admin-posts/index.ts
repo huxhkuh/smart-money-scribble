@@ -8,6 +8,27 @@ const corsHeaders = {
 
 const ADMIN_PASSWORD = "123456";
 
+async function syncPostTags(supabase: any, postId: string, tagNames: string[]) {
+  // Delete existing post_tags
+  await supabase.from("post_tags").delete().eq("post_id", postId);
+  
+  if (tagNames.length === 0) return;
+  
+  // Upsert tags and link
+  for (const name of tagNames) {
+    const slug = name.trim().replace(/\s+/g, "-").toLowerCase();
+    // Try to find existing tag
+    let { data: tag } = await supabase.from("tags").select("id").eq("name", name.trim()).single();
+    if (!tag) {
+      const { data: newTag } = await supabase.from("tags").insert({ name: name.trim(), slug }).select("id").single();
+      tag = newTag;
+    }
+    if (tag) {
+      await supabase.from("post_tags").insert({ post_id: postId, tag_id: tag.id }).select();
+    }
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,12 +78,16 @@ serve(async (req) => {
 
       case "create": {
         const body = await req.json();
+        const { tags, ...postData } = body;
         const { data, error } = await supabase
           .from("posts")
-          .insert(body)
+          .insert(postData)
           .select()
           .single();
         if (error) throw error;
+        if (tags && tags.length > 0) {
+          await syncPostTags(supabase, data.id, tags);
+        }
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -71,12 +96,36 @@ serve(async (req) => {
       case "update": {
         const id = url.searchParams.get("id");
         const body = await req.json();
+        const { tags, ...postData } = body;
         const { data, error } = await supabase
           .from("posts")
-          .update(body)
+          .update(postData)
           .eq("id", id)
           .select()
           .single();
+        if (error) throw error;
+        if (tags !== undefined) {
+          await syncPostTags(supabase, id!, tags);
+        }
+        return new Response(JSON.stringify(data), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "get-tags": {
+        const postId = url.searchParams.get("post_id");
+        if (postId) {
+          const { data, error } = await supabase
+            .from("post_tags")
+            .select("tag_id, tags(id, name, slug)")
+            .eq("post_id", postId);
+          if (error) throw error;
+          const tagsList = data.map((pt: any) => pt.tags);
+          return new Response(JSON.stringify(tagsList), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const { data, error } = await supabase.from("tags").select("*").order("name");
         if (error) throw error;
         return new Response(JSON.stringify(data), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },

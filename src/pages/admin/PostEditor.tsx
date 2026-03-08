@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Save, Eye, Undo, Redo, Send, Sparkles } from "lucide-react";
 import AiWriteDialog from "@/components/editor/AiWriteDialog";
+import TagsInput from "@/components/editor/TagsInput";
 
 export default function PostEditor() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ export default function PostEditor() {
   const [status, setStatus] = useState<string>("draft");
   const [coverImage, setCoverImage] = useState("");
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("edit");
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
@@ -76,6 +78,10 @@ export default function PostEditor() {
       }).catch((e) => {
         toast({ title: "שגיאה בטעינת הפוסט", description: e.message, variant: "destructive" });
       });
+      // Load tags for post
+      adminApi.tags.getForPost(id).then((data: any[]) => {
+        setTags(data.map((t) => t.name));
+      }).catch(() => {});
     }
   }, [id, isNew]);
 
@@ -97,6 +103,7 @@ export default function PostEditor() {
       status,
       cover_image: coverImage,
       content: blocks,
+      tags,
       published_at: status === "published" ? new Date().toISOString() : null,
     };
 
@@ -125,6 +132,7 @@ export default function PostEditor() {
       status: "published",
       cover_image: coverImage,
       content: blocks,
+      tags,
       published_at: new Date().toISOString(),
     };
     try {
@@ -222,6 +230,10 @@ export default function PostEditor() {
           <div className="space-y-1">
             <Label>תמונת כותרת URL</Label>
             <Input value={coverImage} onChange={(e) => setCoverImage(e.target.value)} placeholder="https://..." dir="ltr" />
+          </div>
+          <div className="space-y-1 md:col-span-2 lg:col-span-4">
+            <Label>תגיות</Label>
+            <TagsInput tags={tags} onChange={setTags} />
           </div>
         </CardContent>
       </Card>

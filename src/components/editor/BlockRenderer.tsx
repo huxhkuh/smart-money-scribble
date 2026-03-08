@@ -321,6 +321,122 @@ export default function BlockRenderer({ block, isEditing, onUpdate }: BlockRende
         </div>
       );
 
+    case "video":
+      return (
+        <div style={style}>
+          {isEditing ? (
+            <div className="space-y-2">
+              <Input
+                value={block.content.url || ""}
+                onChange={(e) => updateContent({ url: e.target.value })}
+                placeholder="הדבק קישור YouTube או וידאו..."
+                dir="ltr"
+              />
+              <Input
+                value={block.content.caption || ""}
+                onChange={(e) => updateContent({ caption: e.target.value })}
+                placeholder="כיתוב (אופציונלי)"
+                dir="rtl"
+              />
+            </div>
+          ) : block.content.url ? (
+            <div>
+              <div className="rounded-xl overflow-hidden shadow-lg aspect-video">
+                <iframe
+                  src={block.content.url.includes("youtube.com/watch") 
+                    ? block.content.url.replace("watch?v=", "embed/") 
+                    : block.content.url.includes("youtu.be/")
+                    ? `https://www.youtube.com/embed/${block.content.url.split("youtu.be/")[1]}`
+                    : block.content.url}
+                  className="w-full h-full"
+                  allowFullScreen
+                  loading="lazy"
+                />
+              </div>
+              {block.content.caption && (
+                <p className="text-sm text-muted-foreground mt-2 text-center italic">{block.content.caption}</p>
+              )}
+            </div>
+          ) : null}
+        </div>
+      );
+
+    case "code":
+      return (
+        <div style={style}>
+          {isEditing ? (
+            <div className="space-y-2">
+              <select
+                className="bg-background border rounded-md px-3 py-1.5 text-sm"
+                value={block.content.language || "javascript"}
+                onChange={(e) => updateContent({ language: e.target.value })}
+              >
+                {["javascript", "typescript", "python", "html", "css", "sql", "json", "bash"].map((lang) => (
+                  <option key={lang} value={lang}>{lang}</option>
+                ))}
+              </select>
+              <textarea
+                className="w-full font-mono text-sm bg-muted/50 border rounded-xl p-4 min-h-[120px] resize-y text-foreground"
+                value={block.content.code || ""}
+                onChange={(e) => updateContent({ code: e.target.value })}
+                placeholder="הדבק קוד כאן..."
+                dir="ltr"
+                spellCheck={false}
+              />
+            </div>
+          ) : (
+            <div className="relative rounded-xl overflow-hidden border bg-muted/30">
+              <div className="flex items-center justify-between px-4 py-2 bg-muted/50 border-b">
+                <span className="text-xs font-mono text-muted-foreground">{block.content.language || "code"}</span>
+                <button
+                  className="text-xs text-primary hover:underline"
+                  onClick={() => navigator.clipboard.writeText(block.content.code || "")}
+                >
+                  העתק
+                </button>
+              </div>
+              <pre className="p-4 overflow-x-auto text-sm leading-relaxed">
+                <code dir="ltr" className="font-mono text-foreground">{block.content.code}</code>
+              </pre>
+            </div>
+          )}
+        </div>
+      );
+
+    case "quote":
+      return (
+        <div style={style}>
+          <blockquote className="border-r-4 border-primary/40 pr-6 py-2">
+            {isEditing ? (
+              <div className="space-y-2">
+                <textarea
+                  className="bg-transparent border-none outline-none w-full resize-none text-xl italic text-foreground leading-relaxed"
+                  value={block.content.text || ""}
+                  onChange={(e) => updateContent({ text: e.target.value })}
+                  placeholder="הקלד ציטוט..."
+                  dir="rtl"
+                  rows={2}
+                />
+                <Input
+                  value={block.content.author || ""}
+                  onChange={(e) => updateContent({ author: e.target.value })}
+                  placeholder="שם המצטט (אופציונלי)"
+                  dir="rtl"
+                  className="text-sm"
+                />
+              </div>
+            ) : (
+              <>
+                <p className="text-xl italic text-foreground leading-relaxed">{block.content.text}</p>
+                {block.content.author && (
+                  <footer className="mt-3 text-sm text-muted-foreground">— {block.content.author}</footer>
+                )}
+              </>
+            )}
+          </blockquote>
+        </div>
+      );
+
     default:
       return <div className="text-muted-foreground p-4">בלוק לא מוכר: {block.type}</div>;
   }

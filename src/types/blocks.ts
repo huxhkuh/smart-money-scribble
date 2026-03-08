@@ -7,7 +7,10 @@ export type BlockType =
   | "callout"
   | "cards"
   | "divider"
-  | "embed";
+  | "embed"
+  | "video"
+  | "code"
+  | "quote";
 
 export interface BlockStyle {
   backgroundColor?: string;
@@ -74,6 +77,21 @@ export interface EmbedBlockContent {
   caption?: string;
 }
 
+export interface VideoBlockContent {
+  url: string;
+  caption?: string;
+}
+
+export interface CodeBlockContent {
+  code: string;
+  language: string;
+}
+
+export interface QuoteBlockContent {
+  text: string;
+  author?: string;
+}
+
 export function createBlock(type: BlockType): Block {
   const id = crypto.randomUUID();
   switch (type) {
@@ -95,6 +113,12 @@ export function createBlock(type: BlockType): Block {
       return { id, type, content: {} };
     case "embed":
       return { id, type, content: { url: "" } };
+    case "video":
+      return { id, type, content: { url: "", caption: "" } };
+    case "code":
+      return { id, type, content: { code: "", language: "javascript" } };
+    case "quote":
+      return { id, type, content: { text: "", author: "" } };
     default:
       return { id, type: "text", content: { html: "" } };
   }
